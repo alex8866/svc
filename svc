@@ -1,0 +1,58 @@
+#!/bin/bash
+
+path2=$HOME/.config
+: ${path2:=/usr/isoa/KONG/Shell}
+
+Usage=" svc command error!\nUsage: svc [OPTIONS] [DOMAIN NAME] [SERVICE NAME]\n
+	-c: configure the isoa service\n
+	-f: create a new service file"
+
+DATE=`date "+%Y-%m-%d"`
+
+# check the number of arguments
+
+test $# -ne 1 && {
+	echo -e $Usage
+	exit 1
+}
+
+# creat .pc file
+creatfile()
+{
+	touch $PWD/$1
+	cat $path2/code.conf | sed -n -e '/^<description>/,/^<\/description>/p' | sed '1d;$d' \
+			|sed -e "s/Filename:/Filename: $1/g" | sed "s/Date:/Date: $DATE/g" > $PWD/$1
+	cat $path2/code.conf  |sed -n '/^<head>/,/^<\/head>/p' |sed  '1d;$d' >> $PWD/$1
+#	echo "/* 主函数开始 */" >>$PWD/$1
+#	echo "int main(int argc, char *argv[])
+#{" >> $PWD/$1
+	cat $path2/code.conf  |sed -n '/^<funcbody>/,/^<\/funcbody>/p' |sed  '1d;$d' >> $PWD/$1
+	#echo "}" >> $PWD/$1
+	echo "$1 -> sucess"
+}
+
+#判断文件是否存在
+if [ -f $PWD/$1 ];then
+{
+	echo "$1 is already exits,are you sure to replace it?(y/n)"
+	read ANS
+	case $ANS in
+			y|Y){
+		rm -f $PWD/$1
+		creatfile $1
+		exit 0
+}
+	;;
+	*) exit 0
+			;;
+			esac
+}
+else
+		{
+			creatfile $1
+			exit 0
+		}
+fi
+
+
+exit 0
